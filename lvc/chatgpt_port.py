@@ -6,8 +6,8 @@ import os
 
 import openai
 
-import command_manager
-import voice_feedback
+from lvc import command_manager
+from lvc import voice_feedback
 
 bot = None  # the ChatGPT bot object
 openai.api_key = os.environ.get('OPENAI_API_KEY')  #use export OPENAI_API_KEY='key' in terminal or hardcode it here

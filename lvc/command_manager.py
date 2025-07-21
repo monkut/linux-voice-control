@@ -13,10 +13,10 @@ from termcolor import cprint
 from thefuzz import fuzz
 from thefuzz import process
 
-import config_manager
-import master_mode_manager
-from notifier import notify
-from voice_feedback import give_execution_feedback, speak, give_exiting_feedback
+from lvc import config_manager
+from lvc import master_mode_manager
+from lvc.notifier import notify
+from lvc.voice_feedback import give_execution_feedback, speak, give_exiting_feedback
 
 # stores commands from the lvc-commands.json file
 commands = dict()

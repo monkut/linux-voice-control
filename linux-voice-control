@@ -1,4 +1,15 @@
 #!/bin/bash
+# Find uv command
+if command -v uv &> /dev/null; then
+    UV_CMD="uv"
+elif [ -x "$HOME/.local/bin/uv" ]; then
+    UV_CMD="$HOME/.local/bin/uv"
+elif [ -x "$HOME/.cargo/bin/uv" ]; then
+    UV_CMD="$HOME/.cargo/bin/uv"
+else
+    echo "Error: uv not found. Please install it first."
+    exit 1
+fi
 
-cd ~/lvc-bin || exit
-python3 main.py "$@"
+cd "$(dirname "$0")"
+exec $UV_CMD run lvc "$@"

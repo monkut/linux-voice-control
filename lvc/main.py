@@ -15,14 +15,14 @@ import pyaudio
 import whisper
 from termcolor import cprint
 
-import basic_mode_manager
-import chatgpt_port
-import command_manager
-import config_manager
-import live_mode_manager
-import voice_feedback
-from master_mode_manager import isMasterSpeaking
-from utils import trim
+from lvc import basic_mode_manager
+from lvc import chatgpt_port
+from lvc import command_manager
+from lvc import config_manager
+from lvc import live_mode_manager
+from lvc import voice_feedback
+from lvc.master_mode_manager import isMasterSpeaking
+from lvc.utils import trim
 
 try:
     if not exists('misc'):

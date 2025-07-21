@@ -6,7 +6,7 @@
 import os
 import subprocess
 
-import config_manager
+from lvc import config_manager
 
 username = os.environ.get("USERNAME")
 
