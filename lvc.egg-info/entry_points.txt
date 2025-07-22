@@ -1,0 +1,2 @@
+[console_scripts]
+lvc = lvc.main:main

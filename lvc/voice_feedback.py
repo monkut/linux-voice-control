@@ -7,12 +7,17 @@ import os.path
 import random
 import sys
 
-import mpv
+try:
+    import mpv
+    MPV_AVAILABLE = True
+except (ImportError, OSError):
+    MPV_AVAILABLE = False
+    print("Warning: mpv library not available. Voice feedback will use alternative methods.")
 from gtts import gTTS, gTTSError
 from termcolor import cprint
 
-import config_manager
-import notifier
+from lvc import config_manager
+from lvc import notifier
 
 internet = False
 
@@ -22,10 +27,14 @@ wroteExitingSpeech = False
 wroteTranscriptionSpeech = False
 
 player = None
-try:
-    player = mpv.MPV(ytdl=True)  # using mpv
-except Exception:
-    cprint("voice feedback requires mpv media player installed on your distro!", "red")
+if MPV_AVAILABLE:
+    try:
+        player = mpv.MPV(ytdl=True)  # using mpv
+    except Exception:
+        player = None
+        cprint("voice feedback requires mpv media player installed on your distro!", "red")
+else:
+    player = None
 
 
 # initialized voice control to check network state
@@ -38,22 +47,28 @@ def init():
 def speak(text, wait=False):
     if not config_manager.config['voice-feedback-enabled']:
         return
-    player.speed = config_manager.config['voice-feedback-speed']
+    if player:
+        player.speed = config_manager.config['voice-feedback-speed']
     try:
         speech = gTTS(text=text, lang='en', slow=False)
         speech.save('misc/last-feedback-speech.mp3')
-        player.play('misc/last-feedback-speech.mp3')
-        if wait:
-            player.wait_for_playback()
+        if player:
+            player.play('misc/last-feedback-speech.mp3')
+            if wait:
+                player.wait_for_playback()
+        else:
+            print(f"[Voice Feedback]: {text}")
         return speech
     except gTTSError as e:
         if str(e).find('Failed to connect') >= 0:
-            player.play('misc/network-error.mp3')
-            player.wait_for_playback()
+            if player:
+                player.play('misc/network-error.mp3')
+                player.wait_for_playback()
             print("📢 Network connection is required for voice feedback!", file=sys.stderr)
         else:
-            player.play('misc/internal-voice-feedback-error.mp3')
-            player.wait_for_playback()
+            if player:
+                player.play('misc/internal-voice-feedback-error.mp3')
+                player.wait_for_playback()
             config_manager.config['voice-feedback-enabled'] = False
             notifier.notify('Voice-Feedback failed, See logs!', force=True)
             print(e)
@@ -61,7 +76,8 @@ def speak(text, wait=False):
 
 # internal function to create default voice feedbacks
 def _speak_and_save(text, filename):
-    player.speed = config_manager.config['voice-feedback-speed']
+    if player:
+        player.speed = config_manager.config['voice-feedback-speed']
     try:
         speech = gTTS(text=text, lang='en', slow=False)
         speech.save(filename)
@@ -80,9 +96,10 @@ def give_execution_feedback():
             speech.save('misc/execution-feedback.mp3')
             wroteExecutionSpeech = True
     elif os.path.exists('misc/execution-feedback.mp3'):
-        player.speed = config_manager.config['voice-feedback-speed']
-        player.play('misc/execution-feedback.mp3')
-        player.wait_for_playback()
+        if player:
+            player.speed = config_manager.config['voice-feedback-speed']
+            player.play('misc/execution-feedback.mp3')
+            player.wait_for_playback()
 
 
 # voice feedback when exiting
@@ -94,9 +111,10 @@ def give_exiting_feedback():
             speech.save('misc/exiting-feedback.mp3')
             wroteExitingSpeech = True
     elif os.path.exists('misc/exiting-feedback.mp3'):
-        player.speed = config_manager.config['voice-feedback-speed']
-        player.play('misc/exiting-feedback.mp3')
-        player.wait_for_playback()
+        if player:
+            player.speed = config_manager.config['voice-feedback-speed']
+            player.play('misc/exiting-feedback.mp3')
+            player.wait_for_playback()
 
 # voice feedback when initializing live mode
 def give_live_mode_feedback():
@@ -107,8 +125,9 @@ def give_live_mode_feedback():
             speech.save('misc/live_mode-feedback.mp3')
             wroteLiveModeSpeech = True
     elif os.path.exists('misc/live_mode-feedback.mp3'):
-        player.speed = config_manager.config['voice-feedback-speed']
-        player.play('misc/live_mode-feedback.mp3')
+        if player:
+            player.speed = config_manager.config['voice-feedback-speed']
+            player.play('misc/live_mode-feedback.mp3')
 
 
 # required for live voice control
@@ -123,8 +142,9 @@ def give_transcription_feedback():
                 speech.save('misc/transcription-feedback.mp3')
                 wroteTranscriptionSpeech = True
         elif os.path.exists('misc/transcription-feedback.mp3'):
-            player.speed = config_manager.config['voice-feedback-speed']
-            player.play('misc/transcription-feedback.mp3')
+            if player:
+                player.speed = config_manager.config['voice-feedback-speed']
+                player.play('misc/transcription-feedback.mp3')
 
 
 # checks if network is reachable
@@ -143,9 +163,10 @@ def greet():
         if config_manager.config['voice-cache-enabled']:
             speech.save('misc/greeting.mp3')
     else:
-        player.speed = config_manager.config['voice-feedback-speed']
-        player.play('misc/greeting.mp3')
-        player.wait_for_playback()
+        if player:
+            player.speed = config_manager.config['voice-feedback-speed']
+            player.play('misc/greeting.mp3')
+            player.wait_for_playback()
 
 
 # generates and saves default voice feedbacks
